@@ -10,6 +10,7 @@ type Config struct {
     DBName     string `mapstructure:"DB_NAME"`
     DBPort     string `mapstructure:"DB_PORT"`
     JWTSecret  string `mapstructure:"JWT_SECRET"`
+    EncryptionKey string `mapstructure:"ENCRYPTION_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

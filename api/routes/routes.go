@@ -21,3 +21,36 @@ func SetupAuthRoutes(router *gin.Engine, authHandler *handler.AuthHandler, jwtSe
 		})
 	}
 }
+
+func SetupRouterRoutes(routerGroup *gin.RouterGroup, handler *handler.RouterHandler) {
+	routers := routerGroup.Group("/routers")
+	{
+		routers.POST("", handler.Create)
+		routers.GET("", handler.GetAll)
+		routers.GET("/:id", handler.GetByID)
+		routers.PUT("/:id", handler.Update)
+		routers.DELETE("/:id", handler.Delete)
+	}
+}
+
+func SetupServiceProfileRoutes(routerGroup *gin.RouterGroup, handler *handler.ServiceProfileHandler) {
+	profiles := routerGroup.Group("/profiles")
+	{
+		profiles.POST("", handler.Create)
+		profiles.GET("", handler.GetAll)
+		profiles.GET("/:id", handler.GetByID)
+		profiles.PUT("/:id", handler.Update)
+		profiles.DELETE("/:id", handler.Delete)
+	}
+}
+
+func SetupCustomerRoutes(routerGroup *gin.RouterGroup, handler *handler.CustomerHandler) {
+	customers := routerGroup.Group("/customers")
+	{
+		customers.POST("", handler.Create)
+		customers.GET("", handler.GetAll)
+		customers.GET("/:id", handler.GetByID)
+		customers.PUT("/:id", handler.Update)
+		customers.DELETE("/:id", handler.Delete)
+	}
+}

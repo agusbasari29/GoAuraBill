@@ -4,6 +4,7 @@ go 1.24.5
 
 require (
 	github.com/gin-gonic/gin v1.10.1
+	github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730
 	github.com/golang-jwt/jwt/v5 v5.2.3
 	github.com/spf13/viper v1.20.1
 	golang.org/x/crypto v0.40.0
