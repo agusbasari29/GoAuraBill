@@ -44,13 +44,25 @@ func SetupServiceProfileRoutes(routerGroup *gin.RouterGroup, handler *handler.Se
 	}
 }
 
-func SetupCustomerRoutes(routerGroup *gin.RouterGroup, handler *handler.CustomerHandler) {
-	customers := routerGroup.Group("/customers")
+func SetupCustomerRoutes(router *gin.RouterGroup, handler *handler.CustomerHandler) {
+	customerRoutes := router.Group("/customers")
 	{
-		customers.POST("", handler.Create)
-		customers.GET("", handler.GetAll)
-		customers.GET("/:id", handler.GetByID)
-		customers.PUT("/:id", handler.Update)
-		customers.DELETE("/:id", handler.Delete)
+		customerRoutes.POST("", handler.CreateCustomer)
+		customerRoutes.GET("", handler.GetAllCustomers)
+		customerRoutes.GET("/:id", handler.GetCustomer)
+		customerRoutes.PUT("/:id", handler.UpdateCustomer)
+		customerRoutes.POST("/:id/suspend", handler.SuspendCustomer)
+		customerRoutes.POST("/:id/activate", handler.ActivateCustomer)
+		customerRoutes.DELETE("/:id", handler.DeleteCustomer)
+	}
+}
+
+func SetupVoucherRoutes(routerGroup *gin.RouterGroup, handler *handler.VoucherHandler) {
+	vouchers := routerGroup.Group("/vouchers")
+	{
+		vouchers.POST("/generate", handler.Generate)
+		vouchers.GET("", handler.GetAll)
+		vouchers.GET("/:id", handler.GetByID)
+		vouchers.DELETE("/:id", handler.Delete)
 	}
 }

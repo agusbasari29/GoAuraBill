@@ -60,6 +60,10 @@ func main() {
 	customerService := service.NewCustomerService(customerRepo)
 	customerHandler := handler.NewCustomerHandler(customerService)
 
+	voucherRepo := repository.NewVoucherRepository(DB)
+	voucherService := service.NewVoucherService(voucherRepo)
+	voucherHandler := handler.NewVoucherHandler(voucherService)
+
 	// 5. Siapkan Server Gin
 	router := gin.Default()
 	// 6. Setup Rute
@@ -71,6 +75,7 @@ func main() {
 		routes.SetupRouterRoutes(apiRoutes, routerHandler)
 		routes.SetupServiceProfileRoutes(apiRoutes, profileHandler)
 		routes.SetupCustomerRoutes(apiRoutes, customerHandler)
+		routes.SetupVoucherRoutes(apiRoutes, voucherHandler)
 	}
 	// 7. Jalankan Server
 	serverAddr := ":" + cfg.ServerPort

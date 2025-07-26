@@ -6,11 +6,13 @@ import (
 )
 
 type CustomerRepository interface {
-	Create(customer *model.User) error
-	GetAll() ([]model.User, error)
-	GetByID(id uint) (*model.User, error)
-	Update(customer *model.User) error
-	Delete(id uint) error
+	CreateCustomer(customer *model.Customer) error
+	GetCustomerByID(id uint) (*model.Customer, error)
+	GetCustomerByUserID(userID uint) (*model.Customer, error)
+	GetAllCustomers() ([]model.Customer, error)
+	GetCustomersByStatus(status string) ([]model.Customer, error)
+	UpdateCustomer(customer *model.Customer) error
+	DeleteCustomer(id uint) error
 }
 
 type customerRepository struct {
@@ -18,34 +20,41 @@ type customerRepository struct {
 }
 
 func NewCustomerRepository(db *gorm.DB) CustomerRepository {
-	return &customerRepository{db: db}
+	return &customerRepository{db}
 }
 
-// Create memastikan role pengguna adalah 'customer'
-func (r *customerRepository) Create(customer *model.User) error {
-	customer.Role = "customer" // Paksa role menjadi customer
+func (r *customerRepository) CreateCustomer(customer *model.Customer) error {
 	return r.db.Create(customer).Error
 }
 
-// GetAll hanya mengambil pengguna dengan role 'customer'
-func (r *customerRepository) GetAll() ([]model.User, error) {
-	var customers []model.User
-	err := r.db.Where("role = ?", "customer").Find(&customers).Error
-	return customers, err
-}
-
-// GetByID hanya mengambil pengguna dengan role 'customer'
-func (r *customerRepository) GetByID(id uint) (*model.User, error) {
-	var customer model.User
-	err := r.db.Where("role = ? AND id = ?", "customer", id).First(&customer).Error
+func (r *customerRepository) GetCustomerByID(id uint) (*model.Customer, error) {
+	var customer model.Customer
+	err := r.db.Preload("User").Preload("Profile").First(&customer, id).Error
 	return &customer, err
 }
 
-func (r *customerRepository) Update(customer *model.User) error {
-	customer.Role = "customer" // Pastikan role tidak berubah saat update
+func (r *customerRepository) GetCustomerByUserID(userID uint) (*model.Customer, error) {
+	var customer model.Customer
+	err := r.db.Preload("User").Preload("Profile").Where("user_id = ?", userID).First(&customer).Error
+	return &customer, err
+}
+
+func (r *customerRepository) GetAllCustomers() ([]model.Customer, error) {
+	var customers []model.Customer
+	err := r.db.Preload("User").Preload("Profile").Find(&customers).Error
+	return customers, err
+}
+
+func (r *customerRepository) GetCustomersByStatus(status string) ([]model.Customer, error) {
+	var customers []model.Customer
+	err := r.db.Preload("User").Preload("Profile").Where("status = ?", status).Find(&customers).Error
+	return customers, err
+}
+
+func (r *customerRepository) UpdateCustomer(customer *model.Customer) error {
 	return r.db.Save(customer).Error
 }
 
-func (r *customerRepository) Delete(id uint) error {
-	return r.db.Where("role = ? AND id = ?", "customer", id).Delete(&model.User{}).Error
+func (r *customerRepository) DeleteCustomer(id uint) error {
+	return r.db.Delete(&model.Customer{}, id).Error
 }
