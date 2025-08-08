@@ -21,6 +21,10 @@ type GenerateRequest struct {
 	ProfileID uint `json:"profile_id" binding:"required"`
 }
 
+type RedeemRequest struct {
+	Code string `json:"code" binding:"required"`
+}
+
 func (h *VoucherHandler) Generate(c *gin.Context) {
 	var req GenerateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -37,6 +41,7 @@ func (h *VoucherHandler) Generate(c *gin.Context) {
 		"count":   len(vouchers),
 	})
 }
+
 func (h *VoucherHandler) GetAll(c *gin.Context) {
 	vouchers, err := h.service.GetAllVouchers()
 	if err != nil {
@@ -45,6 +50,7 @@ func (h *VoucherHandler) GetAll(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, vouchers)
 }
+
 func (h *VoucherHandler) GetByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -58,6 +64,7 @@ func (h *VoucherHandler) GetByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, voucher)
 }
+
 func (h *VoucherHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -69,4 +76,31 @@ func (h *VoucherHandler) Delete(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Voucher deleted successfully"})
+}
+
+func (h *VoucherHandler) Redeem(c *gin.Context) {
+	var req RedeemRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Dapatkan customer ID dari token JWT yang sudah divalidasi oleh middleware
+	customerIDInterface, exists := c.Get("customer_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Tidak dapat mengidentifikasi pelanggan dari token"})
+		return
+	}
+	customerID, ok := customerIDInterface.(uint)
+	if !ok || customerID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Customer ID tidak valid"})
+		return
+	}
+	err := h.service.RedeemVoucher(req.Code, customerID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Voucher berhasil diaktifkan"})
 }

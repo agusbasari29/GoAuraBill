@@ -9,6 +9,8 @@ type VoucherRepository interface {
 	CreateBatch(vouchers []*model.Voucher) error
 	GetAll() ([]model.Voucher, error)
 	GetByID(id uint) (*model.Voucher, error)
+	GetByCode(code string) (*model.Voucher, error)
+	Update(voucher *model.Voucher) error
 	Delete(id uint) error
 }
 
@@ -36,4 +38,15 @@ func (r *voucherRepository) GetByID(id uint) (*model.Voucher, error) {
 }
 func (r *voucherRepository) Delete(id uint) error {
 	return r.db.Delete(&model.Voucher{}, id).Error
+}
+
+func (r *voucherRepository) GetByCode(code string) (*model.Voucher, error) {
+	var voucher model.Voucher
+	// Preload Profile untuk mendapatkan detail paket dari voucher
+	err := r.db.Preload("Profile").Where("code = ?", code).First(&voucher).Error
+	return &voucher, err
+}
+
+func (r *voucherRepository) Update(voucher *model.Voucher) error {
+	return r.db.Save(voucher).Error
 }

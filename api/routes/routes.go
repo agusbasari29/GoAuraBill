@@ -1,9 +1,11 @@
 package routes
+
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/agusbasari29/GoAuraBill/internal/handler" // Ganti dengan path modul Anda
+	"github.com/agusbasari29/GoAuraBill/internal/handler"    // Ganti dengan path modul Anda
 	"github.com/agusbasari29/GoAuraBill/internal/middleware" // Ganti dengan path modul Anda
+	"github.com/gin-gonic/gin"
 )
+
 func SetupAuthRoutes(router *gin.Engine, authHandler *handler.AuthHandler, jwtSecret string) {
 	authRoutes := router.Group("/auth")
 	{
@@ -60,9 +62,37 @@ func SetupCustomerRoutes(router *gin.RouterGroup, handler *handler.CustomerHandl
 func SetupVoucherRoutes(routerGroup *gin.RouterGroup, handler *handler.VoucherHandler) {
 	vouchers := routerGroup.Group("/vouchers")
 	{
-		vouchers.POST("/generate", handler.Generate)
-		vouchers.GET("", handler.GetAll)
-		vouchers.GET("/:id", handler.GetByID)
-		vouchers.DELETE("/:id", handler.Delete)
+		vouchers.POST("/generate", handler.Generate) // Admin only
+		vouchers.GET("", handler.GetAll)             // Admin only
+		vouchers.GET("/:id", handler.GetByID)        // Admin only
+		vouchers.DELETE("/:id", handler.Delete)      // Admin only
+		vouchers.POST("/redeem", handler.Redeem)     // Customer
+	}
+}
+
+func SetupTransactionRoutes(router *gin.RouterGroup, handler *handler.TransactionHandler) {
+	txns := router.Group("/transactions")
+	{
+		txns.POST("", handler.Create)
+		txns.GET("/:id", handler.GetByID)
+		txns.GET("/customer/:customer_id", handler.GetCustomerTransactions)
+		txns.POST("/:id/process", handler.ProcessPayment)
+		txns.POST("/:id/cancel", handler.CancelTransaction)
+	}
+}
+
+func SetupPaymentRoutes(router *gin.Engine, apiGroup *gin.RouterGroup, handler *handler.PaymentHandler) {
+	// Endpoint untuk membuat charge, memerlukan autentikasi
+	apiGroup.POST("/payments/charge/:transaction_id", handler.CreateCharge)
+	
+	// Endpoint untuk callback dari Tripay, TIDAK memerlukan autentikasi
+	router.POST("/api/payments/tripay-callback", handler.HandleNotification)
+}
+
+func SetupReportRoutes(routerGroup *gin.RouterGroup, handler *handler.ReportHandler) {
+	reports := routerGroup.Group("/reports")
+	{
+		reports.GET("/revenue", handler.GetRevenueReport) // GET /api/reports/revenue?period=daily/monthly
+		reports.GET("/summary", handler.GetSummaryReport) // GET /api/reports/summary
 	}
 }

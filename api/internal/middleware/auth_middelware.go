@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
+
 func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -62,4 +63,13 @@ func GetUserRole(c *gin.Context) string {
 		}
 	}
 	return ""
+}
+
+func GetCustomerID(c *gin.Context) uint {
+	if customerID, exists := c.Get("customer_id"); exists {
+		if id, ok := customerID.(float64); ok { // JWT claims parse numbers as float64
+			return uint(id)
+		}
+	}
+	return 0
 }
